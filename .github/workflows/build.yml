@@ -1,0 +1,76 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # android/ klasörü depoda (kendini güncelleme native kodu burada).
+      # flutter create yalnızca eksik dosyaları tamamlar, mevcutları ezmez.
+      - name: Android iskeletini oluştur
+        run: |
+          flutter create --platforms=android --org com.xadan --project-name stable_ai .
+          rm -f test/widget_test.dart
+
+      # Uygulama adı + LLM (INTERNET) + kendini kurma izinleri ve FileProvider.
+      # Hepsi koşullu: depodaki dosyalar zaten hazır olduğu için tekrar eklenmez.
+      - name: Uygulama adını ve izinleri ayarla
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label="[^"]*"/android:label="Stable AI"/' "$M"
+          grep -q 'android.permission.INTERNET' "$M" || sed -i 's|<manifest[^>]*>|&\n    <uses-permission android:name="android.permission.INTERNET"/>|' "$M"
+          grep -q 'REQUEST_INSTALL_PACKAGES' "$M" || sed -i 's|<manifest[^>]*>|&\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>|' "$M"
+          grep -q 'FileProvider' "$M" || sed -i 's|</application>|        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/></provider>\n    </application>|' "$M"
+          grep -q 'androidx.core:core' android/app/build.gradle.kts || printf '\ndependencies {\n    implementation("androidx.core:core:1.15.0")\n}\n' >> android/app/build.gradle.kts
+          grep -n "uses-permission" "$M"
+
+      - run: flutter pub get
+
+      - name: Kodu denetle
+        run: flutter analyze
+
+      - id: ver
+        name: Sürümü oku
+        run: echo "version=$(grep -m1 '^version:' pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Testleri çalıştır
+        run: flutter test
+
+      - name: APK derle
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StableAI-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # Her push'ta pubspec sürümü üzerinden Release açar (yoksa oluşturur)
+      # ve APK'yı ekler; uygulama tam da buradan kendini günceller.
+      - name: Sürümü ve APK'yı Release'e yükle
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: Stable AI ${{ steps.ver.outputs.version }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
+          make_latest: true

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "tr": [
+    {
+      "keys": ["güncelleme nasıl yapılır", "kendini güncelleme", "nasıl güncellenir"],
+      "answers": ["Güncelleme iki şekilde olur: açılışta bilgi tabanım depodan tazelenir, yeni sürüm çıktığında ise Ayarlar > Güncelleme'den 'Sürümü kontrol et'e basıp APK'yı indirip kurabilirsin."]
+    },
+    {
+      "keys": ["hangi sürüm", "sürümün ne"],
+      "answers": ["Ayarlar > Hakkında bölümündeki sürüm numarası benim güncel sürümümdür."]
+    }
+  ],
+  "en": [
+    {
+      "keys": ["how do updates work", "self update", "how is it updated"],
+      "answers": ["Updates come from two places: my knowledge base refreshes from the repository on launch, and when a new version is released you can tap 'Check for updates' in Settings > Updates to download and install the APK."]
+    },
+    {
+      "keys": ["which version", "what version are you"],
+      "answers": ["The version number in Settings > About is my current version."]
+    }
+  ],
+  "de": [
+    {
+      "keys": ["wie funktionieren updates", "selbstupdate", "wie wird es aktualisiert"],
+      "answers": ["Updates kommen von zwei Stellen: meine Wissensbasis wird beim Start aus dem Repository aktualisiert, und bei einer neuen Version kannst du unter Einstellungen > Updates auf 'Nach Updates suchen' tippen, um das APK zu laden und zu installieren."]
+    },
+    {
+      "keys": ["welche version", "welche version hast du"],
+      "answers": ["Die Versionsnummer unter Einstellungen > Info ist meine aktuelle Version."]
+    }
+  ]
+}

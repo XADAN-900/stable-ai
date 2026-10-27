@@ -1,0 +1,7 @@
+# Flutter lints (flutter analyze bu dosyayı kullanır).
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
